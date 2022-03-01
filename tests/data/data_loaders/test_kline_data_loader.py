@@ -1,13 +1,23 @@
-import pytest
 from src.data.data_loaders.kline_data_loader import *
+from dateutil.relativedelta import relativedelta
 
-def setup_function():
-    data_loader = kline_data_loader()
-    pytest.df = data_loader.LoadCsv('./tests/test_files/BTCUSDT-Spot.csv')
+class TestOutOfDate:
+    def setup(self):
+        data_loader = kline_data_loader('2016-08-17 04:01:00', '2016-08-17 04:10:00')
+        self.df = data_loader.LoadCsv('./tests/test_files/BTCUSDT-Spot.csv')
 
-def test_deduplication():
-    assert len(pytest.df) == 309559
+    def test_load(self):
+        assert self.df == None
 
-def test_sort():
-    results = [pytest.df['date'][index - 1] < pytest.df['date'][index] for index in range(1, len(pytest.df))]
-    assert all(results)
+class TestLoadData:
+    def setup(self):
+        data_loader = kline_data_loader('2017-08-17 04:01:00', '2017-08-17 04:10:00')
+        self.stock_code, self.df = data_loader.LoadCsv('./tests/test_files/BTCUSDT-Spot.csv')
+
+    def test_data_arrangementn(self):
+        assert len(self.df) == 10
+        assert self.stock_code == 'BTCUSDT'
+
+    def test_sort(self):
+        results = [self.df['date'][index - 1] + relativedelta(minutes=1) == self.df['date'][index] for index in range(1, len(self.df))]
+        assert all(results)
