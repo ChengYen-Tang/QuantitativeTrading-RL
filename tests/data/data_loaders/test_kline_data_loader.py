@@ -3,15 +3,15 @@ from dateutil.relativedelta import relativedelta
 
 class TestOutOfDate:
     def setup(self):
-        data_loader = kline_data_loader('2016-08-17 04:01:00', '2016-08-17 04:10:00')
-        self.df = data_loader.LoadCsv('./tests/test_files/BTCUSDT-Spot.csv')
+        data_loader = KlineDataLoader('2016-08-17 04:01:00', '2016-08-17 04:10:00')
+        self.stock_code, self.df = data_loader.LoadCsv('./tests/test_files/BTCUSDT-Spot.csv')
 
     def test_load(self):
-        assert self.df == None
+        assert self.stock_code == None
 
 class TestLoadData:
     def setup(self):
-        data_loader = kline_data_loader('2017-08-17 04:01:00', '2017-08-17 04:10:00')
+        data_loader = KlineDataLoader('2017-08-17 04:01:00', '2017-08-17 04:10:00')
         self.stock_code, self.df = data_loader.LoadCsv('./tests/test_files/BTCUSDT-Spot.csv')
 
     def test_data_arrangementn(self):
