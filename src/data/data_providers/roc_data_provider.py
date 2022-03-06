@@ -1,16 +1,16 @@
-from select import select
 import sys
 sys.path.append('./')
 import numpy as np
 from src.data.data_loaders.all_roc_data_loader import *
 
 class RocDataProvider:
-    def __init__(self, folder_path, start_time, end_time, time_cycle):
-        data_loader = AllROCDataLoader(start_time, end_time)
-        self.data = data_loader.load_data(folder_path)
+    def __init__(self, folder_path, start_time, end_time, time_cycle, base_symbol):
+        self.data_loader = AllROCDataLoader(start_time, end_time)
+        self.data, self.__max_value, self.__min_value = self.data_loader.load_data(folder_path)
         self.time_cycle = time_cycle
         cache_folder_path = './cache/'
         observation_cache_path = os.path.join(cache_folder_path, 'observation_cache.npy')
+        trading_symbols_cache_path = os.path.join(cache_folder_path, 'trading_symbols_cache.npy')
         if os.path.isfile(observation_cache_path):
             self.observation_sort = np.load(observation_cache_path)
         else:
@@ -18,6 +18,11 @@ class RocDataProvider:
             if not os.path.exists(cache_folder_path):
                 os.mkdir(cache_folder_path)
             np.save(observation_cache_path, self.observation_sort)
+        if os.path.isfile(trading_symbols_cache_path):
+            self.trading_symbols = np.load(trading_symbols_cache_path)
+        else:
+            self.trading_symbols = self.observation_sort[np.flatnonzero(np.core.defchararray.find(self.observation_sort, base_symbol)!=-1)]
+            np.save(trading_symbols_cache_path, self.trading_symbols)
         if (len(self.data[self.observation_sort[0]]) - 1) % time_cycle is not 0:
             raise ValueError('時間範圍內的資料數量減去前 1440 及最後一筆資料後，必須可以被 time_cycle 整除')
 
@@ -66,8 +71,14 @@ class RocDataProvider:
     def get_current_time(self):
         return self.data[self.observation_sort[0]]['date'].values[self.index]
 
+    def get_trading_stock_code(self):
+        return self.trading_symbols
+
+    def get_observation_max_min(self):
+        return self.__max_value, self.__min_value
+
 if __name__ == '__main__':
-    data_loader = RocDataProvider('./tests/test_files', '2017-10-14 00:00:00', '2017-11-19 00:00:00', 10080)
+    data_loader = RocDataProvider('./tests/test_files', '2017-10-14 00:00:00', '2017-11-19 00:00:00', 10080, 'USDT')
     data_loader.reset_cycle()
     data_loader.reset()
     for a in range(4):
