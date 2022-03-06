@@ -25,18 +25,24 @@ class AllROCDataLoader():
         return all_data
 
     def data_processing(self, file_path):
-        self.stock_code, self.df = self.data_loader.LoadCsv(file_path)
-        if self.stock_code == None:
+        stock_code, df = self.data_loader.LoadCsv(file_path)
+        if stock_code == None:
             return None, None
             
-        self.df['Close_ROC'] = talib.ROC(self.df['close'], timeperiod=1)
-        self.df['Volume_ROC'] = talib.ROC(self.df['volume'], timeperiod=1)
-        self.df['Close_ROC_15'] = talib.ROC(self.df['close'], timeperiod=15)
-        self.df['Volume_ROC_15'] = talib.ROC(self.df['volume'], timeperiod=15)
-        self.df['Close_ROC_60'] = talib.ROC(self.df['close'], timeperiod=60)
-        self.df['Volume_ROC_60'] = talib.ROC(self.df['volume'], timeperiod=60)
-        self.df = self.df.drop(['stock_code', 'open', 'high', 'low', 'close', 'volume', 'money', 'factor', 'change', 'TradeCount' , 'TakerBuyBaseVolume', 'TakerBuyQuoteVolume'], axis=1)
-        return self.stock_code, self.df
+        df['Close_ROC'] = talib.ROC(df['close'], timeperiod=1)
+        df['Volume_ROC'] = talib.ROC(df['volume'], timeperiod=1)
+        df['Close_ROC_15'] = talib.ROC(df['close'], timeperiod=15)
+        df['Volume_ROC_15'] = talib.ROC(df['volume'], timeperiod=15)
+        df['Close_ROC_60'] = talib.ROC(df['close'], timeperiod=60)
+        df['Volume_ROC_60'] = talib.ROC(df['volume'], timeperiod=60)
+        df['Close_ROC_240'] = talib.ROC(df['close'], timeperiod=240)
+        df['Volume_ROC_240'] = talib.ROC(df['volume'], timeperiod=240)
+        df['Close_ROC_1440'] = talib.ROC(df['close'], timeperiod=1440)
+        df['Volume_ROC_1440'] = talib.ROC(df['volume'], timeperiod=1440)
+        df = df.drop(['stock_code', 'open', 'high', 'low', 'volume', 'money', 'factor', 'change', 'TradeCount' , 'TakerBuyBaseVolume', 'TakerBuyQuoteVolume'], axis=1)
+        drop_index = [index for index in range(1440)]
+        df.drop(drop_index, inplace=True)
+        return stock_code, df.reset_index()
 
 if __name__ == '__main__':
     data_loader = AllROCDataLoader('2017-10-17 04:01:00', '2017-10-17 05:10:00')
